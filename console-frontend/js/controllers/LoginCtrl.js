@@ -38,7 +38,6 @@ angular.module('login').controller('LoginCtrl', ['$scope', '$http', '$location',
     var port = dataMan.port;
 
     $scope.login = function() {
-
       var data = $.param({
         username: $scope.username,
         password: Base64.encode($scope.password)
@@ -107,10 +106,10 @@ angular.module('logout')
     var dataMan = ConfigService.backend["data-manager"];
     var host = dataMan.host;
     var port = dataMan.port;
+    delete $rootScope.checkGateway;
 
     // remove cookie data and logout user
     $rootScope.globals = {};
-
     $cookies.remove('globals');
     $cookies.remove('userLoggedIn');
     $cookies.remove('user');

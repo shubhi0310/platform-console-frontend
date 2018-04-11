@@ -87,27 +87,40 @@ var consoleFrontendApp = angular.module('consoleFrontendApp', [
           templateUrl: 'partials/datasets.html',
           controller: 'DatasetsCtrl'
         }).
+        when('/gateway', {
+            templateUrl: 'partials/curated-view.html',
+            controller: 'MetricListCtrl'
+        }).
         otherwise({
           redirectTo: '/'
         });
     }]);
 
+
 consoleFrontendApp.run(function($rootScope, $location, $cookies, $http, ConfigService, HelpService, ModalService) {
   $rootScope.globals = $cookies.get('globals') || {};
   var userName = $cookies.get('userLoggedIn');
-  
-  $rootScope.$on('$routeChangeStart', function() {
+  $rootScope.checkGateway = false;
+  $rootScope.$on('$routeChangeStart', function(event, next, prev) {
     var userName = $cookies.get('userLoggedIn');
-
     if (userName !== undefined && userName) {
       $("#navWelcomeText").text('Welcome, ' + $cookies.get('user') + '  ');
       $("#navWelcomeText").append('<span class="caret"></span>');
       $(".role").remove();
-
       //$(".dropdown-menu").prepend('<li class="role"><a href="#">' + $cookies.get('userRole') + '</a></li>');
     } else {
       $location.path('/login');
     }
+    
+    if(!$rootScope.checkGateway && prev === undefined){
+      if(next.$$route.originalPath === "/gateway"){
+        $rootScope.gatewayEnabled = true;
+      }else{
+        $rootScope.gatewayEnabled = false;
+     }
+      $rootScope.checkGateway = true;
+    }
+
 
     // redirect to login page if not logged in and trying to access a restricted page
     var restrictedPage = $.inArray($location.path(), ['/login']) === -1;

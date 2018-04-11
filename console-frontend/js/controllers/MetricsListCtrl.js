@@ -28,9 +28,9 @@
 
 angular.module('appControllers').controller('MetricListCtrl', ['$scope', 'MetricService', 'ConfigService',
   'ModalService', 'DeploymentManagerService', 'UtilService',
-  'socket', '$filter', '$modal', '$interval', '$location', '$window',
+  'socket', '$filter', '$modal', '$interval', '$location', '$window','$rootScope',
   function($scope, MetricService, ConfigService, ModalService, DeploymentManagerService, UtilService,
-    socket, $filter, $modal, $interval, $location, $window) {
+    socket, $filter, $modal, $interval, $location, $window, $rootScope) {
 
     var locationParameters = $location.search();
     $scope.theme = (locationParameters.theme === undefined ? '' : 'css/generated/themes/'
@@ -142,7 +142,15 @@ angular.module('appControllers').controller('MetricListCtrl', ['$scope', 'Metric
       var links = ConfigService.userInterfaceIndex;
       var sortedLinks = {};
       Object.keys(links).sort().forEach(function(key) {
+       if(key === "YARN Proxy"){
+         if(!($rootScope.gatewayEnabled && ConfigService.userInterfaceIndex["YARN Proxy"] !== undefined)){
+            sortedLinks[key] = "";
+         }else{
+            sortedLinks[key] = links[key];
+         }
+       }else{
         sortedLinks[key] = links[key];
+       }
       });
       return sortedLinks;
     };
@@ -329,7 +337,11 @@ angular.module('appControllers').controller('MetricListCtrl', ['$scope', 'Metric
               "#/main/views/FILES/1.0.0/PNDA_FILES_SU/";
           }
         } else if ((source === "yarn01" || source === "YARN")) {
-          resolutionUrl = ConfigService.userInterfaceIndex["YARN Resource Manager"];
+          if($rootScope.gatewayEnabled && ConfigService.userInterfaceIndex["YARN Proxy"] !== undefined)
+            resolutionUrl = ConfigService.userInterfaceIndex["YARN Proxy"];
+          else{
+            resolutionUrl = ConfigService.userInterfaceIndex["YARN Resource Manager"];
+          }
         } else if (source === "OOZIE") {
           resolutionUrl = ConfigService.userInterfaceIndex["Hadoop Cluster Manager"] +
             '#/main/views/WORKFLOW_MANAGER/1.0.0/PNDA_WORKFLOW';

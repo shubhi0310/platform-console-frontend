@@ -28,8 +28,9 @@
 
 angular.module('appControllers').controller('ApplicationCtrl', ['$scope', '$filter', '$cookies',
   'DeploymentManagerService', '$timeout', 'socket', '$compile', '$window', 'ModalService',
-  'MetricService', 'UtilService', function($scope, $filter, $cookies, DeploymentManagerService,
-    $timeout, socket, $compile, $window, ModalService, MetricService, UtilService) {
+  'MetricService', 'UtilService','ConfigService','$rootScope',
+   function($scope, $filter, $cookies, DeploymentManagerService,$timeout, socket, $compile, $window,
+   ModalService, MetricService, UtilService, ConfigService,$rootScope) {
 
     var defaultTimeout = 500;
     var yarnUrl;
@@ -234,7 +235,11 @@ angular.module('appControllers').controller('ApplicationCtrl', ['$scope', '$filt
       DeploymentManagerService.getEndpoints().then(function(data) {
           var yarnHost = data.yarn_resource_manager_host;
           var yarnPort = data.yarn_resource_manager_port;
-          yarnUrl = "http://" + yarnHost + ":" + yarnPort + "/cluster/app";
+          if($rootScope.gatewayEnabled && ConfigService.userInterfaceIndex["YARN Proxy"] !== undefined){
+             yarnUrl = ConfigService.userInterfaceIndex["YARN Proxy"]+"/cluster/app";
+          }else{
+             yarnUrl = "http://" + yarnHost + ":" + yarnPort + "/cluster/app";
+          }
         });
     };
 
