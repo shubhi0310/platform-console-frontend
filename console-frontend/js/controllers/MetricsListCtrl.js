@@ -122,6 +122,7 @@ angular.module('appControllers').controller('MetricListCtrl', ['$scope', 'Metric
       $scope.metrics = response.metrics;
       $scope.metricLoaded = true;
       $window.localStorage.setItem('serverTime',response.serverTime);
+      $window.localStorage.setItem('currentTopics',response.currentTopics);
       $scope.serverTime = JSON.parse($window.localStorage.getItem('serverTime'));
       resetTrafficLightStatus();
       angular.forEach(response.metrics, function(metric) {
@@ -144,7 +145,6 @@ angular.module('appControllers').controller('MetricListCtrl', ['$scope', 'Metric
             }
           }
           $scope.trafficLightStatus.status = computeTrafficLightStatus();
-
           // if there is a callback function for this metric, call it
           var foundCb = $filter('getByName')($scope.metricCallbacks, metric.name);
 
@@ -274,6 +274,11 @@ angular.module('appControllers').controller('MetricListCtrl', ['$scope', 'Metric
 
     // update metrics when socket.io updates are received.
     function socketMetricsUpdate(obj) {
+    //Add latest kafka topics to storage
+     if(obj.metric.endsWith(".available.topics")){
+       $window.localStorage.setItem('currentTopics',obj.value);
+     }
+
       var causes = (obj.causes === undefined || obj.causes === "" || obj.causes === "[\"\"]" ? [] : obj.causes
       && UtilService.isJson(obj.causes) ? JSON.parse(obj.causes) : [obj.causes]);
 
@@ -301,7 +306,9 @@ angular.module('appControllers').controller('MetricListCtrl', ['$scope', 'Metric
             displayCauses: displayCauses
           }
         };
-        $scope.metrics.push(found);
+        if(!obj.metric.endsWith(".available.topics")){
+          $scope.metrics.push(found);
+        }
       }
 
       // if there is a callback function for this metric, call it
