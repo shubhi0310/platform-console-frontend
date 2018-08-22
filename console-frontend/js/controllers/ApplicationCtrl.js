@@ -101,6 +101,21 @@ angular.module('appControllers').controller('ApplicationCtrl', ['$scope', '$filt
           case "DESTROYING":
             text = "Deleting...";
             break;
+          case "DESTROYING":
+            text = "Deleting...";
+            break;
+          case "KILLED":
+            text = "Killed";
+            break;
+          case "FAILED":
+            text = "Failed";
+            break;
+          case "COMPLETED":
+            text = "Completed";
+            break;
+          case "STOPPED":
+            text = "Stopped";
+            break;
         }
         return text;
       }
@@ -127,7 +142,8 @@ angular.module('appControllers').controller('ApplicationCtrl', ['$scope', '$filt
       if ((status === "NOTCREATED" && information === null) || status === "DESTROYING") {
         $scope.alertClass = "alert-success";
         $timeout($scope.getAppsList(status), 2000);
-      } else if (status === 200 || status === "CREATED" || status === "STARTED") {
+      } else if (status === 200 || status === "CREATED" || status === "STARTED" || status === "COMPLETED" ||
+        status === "KILLED" || status ===  "FAILED" || status ===  "STOPPED") {
         $scope.alertClass = "alert-success";
         $timeout($scope.refreshAppsList(applicationName, status, isNewApp), 3000);
       } else if (status === 202 || status === "CREATING"
@@ -270,8 +286,18 @@ angular.module('appControllers').controller('ApplicationCtrl', ['$scope', '$filt
     $scope.getAppsList();
 
     $scope.startOrStopApplication = function(name, status) {
-      var action = status === Constants.APPLICATION.CREATED ? "start" : status === Constants.APPLICATION.STARTED
-      ? "stop" : undefined;
+      var action;
+      if(status === Constants.APPLICATION.CREATED || status === Constants.APPLICATION.COMPLETED ||
+         status === Constants.APPLICATION.FAILED || status === Constants.APPLICATION.KILLED ||
+         status === Constants.APPLICATION.STOPPED ){
+        action = "start";
+      }else{
+         if(status === Constants.APPLICATION.STARTED){
+           action = "stop";
+         }else{
+           action = undefined;
+         }
+      }
       
       if (action !== undefined) {
         displayConfirmation("Are you sure you want to " + action + " " + name + "?", function() {
@@ -602,3 +628,4 @@ angular.module('appControllers').controller('ApplicationCtrl', ['$scope', '$filt
 
     socket.on('platform-console-frontend-metric-update', socketMetricsUpdate);
   }]);
+
